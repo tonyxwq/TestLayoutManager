@@ -30,5 +30,6 @@ dependencies {
     //图片加载
     implementation 'com.github.bumptech.glide:glide:3.7.0'
     implementation 'com.androidessence:pinchzoomtextview:1.0.1'
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
 
 }

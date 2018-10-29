@@ -11,24 +11,26 @@ import java.util.ArrayList;
 /**
  * Author:XWQ
  * Time   2018/10/18
- * Descrition: this is EchelonLayoutManager
+ * Descrition: this is LayoutManager
  */
 
-public class EchelonLayoutManager extends RecyclerView.LayoutManager
+public class LayoutManager extends RecyclerView.LayoutManager
 {
     private int temp = 0;
     private float starty = 0, endy = 0;
     private int mItemViewWidth;
     private int mItemViewHeight;
     private float mScale = 0.9f;
+    private float mWidthScale = 0.87f;
+    private float mHeigthScale = 1.46f;
     private int mScrollOffset = Integer.MAX_VALUE;
     private RecyclerView recyclerView;
     private RecyclerView.Recycler recyclers;
 
-    public EchelonLayoutManager(RecyclerView recyclerView)
+    public LayoutManager(RecyclerView recyclerView)
     {
-        mItemViewWidth = (int) (getHorizontalSpace() * 0.87f);//item的宽
-        mItemViewHeight = (int) (mItemViewWidth * 1.46f);//item的高
+        mItemViewWidth = (int) (getHorizontalSpace() * mWidthScale);//item的宽
+        mItemViewHeight = (int) (mItemViewWidth * mHeigthScale);//item的高
         this.recyclerView = recyclerView;
     }
 
@@ -38,13 +40,10 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
         //如果没有item，直接返回
         if (getItemCount() <= 0) return;
         // 跳过preLayout，preLayout主要用于支持动画
-        if (state.isPreLayout())
-        {
-            return;
-        }
+        if (state.isPreLayout()) return;
         removeAndRecycleAllViews(recycler);
-        mItemViewWidth = (int) (getHorizontalSpace() * 0.87f);
-        mItemViewHeight = (int) (mItemViewWidth * 1.46f);
+        mItemViewWidth = (int) (getHorizontalSpace() * mWidthScale);
+        mItemViewHeight = (int) (mItemViewWidth * mHeigthScale);
         mScrollOffset = Math.min(Math.max(mItemViewHeight, mScrollOffset), getItemCount() * mItemViewHeight);
         layoutChild(recycler, 0);
         recyclers = recycler;
@@ -95,7 +94,7 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
     {
         ValueAnimator anim = ValueAnimator.ofInt(0, index);
         // 设置动画运行的时长
-        anim.setDuration(150);
+        anim.setDuration(200);
         anim.setRepeatCount(0);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
         {
@@ -108,7 +107,6 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
                 temp = currentValue;
             }
         });
-
         anim.start();
         // 启动动画
     }
@@ -122,27 +120,13 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
         }
     };
 
-    private void brewAndStartAnimator()
-    {
-        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(recyclerView, "translationY", 0f, 200f);
-//      设置移动时间
-        objectAnimator.setDuration(1000);
-//      开始动画
-        objectAnimator.start();
-
-    }
-
     private void layoutChild(RecyclerView.Recycler recycler, int dy)
     {
         if (getItemCount() == 0) return;
         int bottomItemPosition = (int) Math.floor((mScrollOffset) / mItemViewHeight);
-        //Log.d("data","========bottomItemPosition========"+bottomItemPosition);
-
         int remainSpace = getVerticalSpace() - mItemViewHeight;
-
         int bottomItemVisibleHeight = mScrollOffset % mItemViewHeight;
         final float offsetPercentRelativeToItemView = bottomItemVisibleHeight * 1.0f / mItemViewHeight;
-
         ArrayList<ItemViewInfo> layoutInfos = new ArrayList<>();
         for (int i = bottomItemPosition - 1, j = 1; i >= 0; i--, j++)
         {
@@ -167,9 +151,6 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
             layoutInfos.add(new ItemViewInfo(start, 1.0f)
                     .setIsBottom());
             mScrollOffset = mScrollOffset;
-
-            //Log.d("data","============="+dy);
-
         } else
         {
             bottomItemPosition = bottomItemPosition - 1;//99
@@ -179,7 +160,6 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
         final int startPos = bottomItemPosition - (layoutCount - 1);
         final int endPos = bottomItemPosition;
         final int childCount = getChildCount();
-        //Log.d("data","=========layoutCount===layoutCount========="+layoutCount);
         for (int i = childCount - 1; i >= 0; i--)
         {
             View childView = getChildAt(i);
@@ -189,9 +169,7 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
                 removeAndRecycleView(childView, recycler);
             }
         }
-
         detachAndScrapAttachedViews(recycler);
-
         for (int i = 0; i < layoutCount; i++)
         {
             View view = recycler.getViewForPosition(startPos + i);
@@ -230,7 +208,6 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state)
     {
         mScrollOffset = Math.min(Math.max(mItemViewHeight, mScrollOffset + dy), getItemCount() * mItemViewHeight);
-        //Log.d("data","=====mScrollOffset======"+(mScrollOffset + dy));
         layoutChild(recycler, 0);
         return dy;
     }
@@ -290,53 +267,4 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
         return new RecyclerView.LayoutParams(RecyclerView.LayoutParams.WRAP_CONTENT,
                 RecyclerView.LayoutParams.WRAP_CONTENT);
     }
-
-
-    /**
-     * 目标项是否在最后一个可见项之后
-     */
-    private boolean mShouldScroll;
-    /**
-     * 记录目标项位置
-     */
-    private int mToPosition;
-
-    /**
-     * 滑动到指定位置
-     *
-     * @param mRecyclerView
-     * @param position
-     */
-    public void smoothMoveToPosition(RecyclerView mRecyclerView, final int position)
-    {
-        // 第一个可见位置
-        int firstItem = mRecyclerView.getChildLayoutPosition(mRecyclerView.getChildAt(0));
-        // 最后一个可见位置
-        int lastItem = mRecyclerView.getChildLayoutPosition(mRecyclerView.getChildAt(mRecyclerView.getChildCount() - 1));
-
-        if (position < firstItem)
-        {
-            // 如果跳转位置在第一个可见位置之前，就smoothScrollToPosition可以直接跳转
-            mRecyclerView.smoothScrollToPosition(position);
-        } else if (position <= lastItem)
-        {
-            // 跳转位置在第一个可见项之后，最后一个可见项之前
-            // smoothScrollToPosition根本不会动，此时调用smoothScrollBy来滑动到指定位置
-            int movePosition = position - firstItem;
-            if (movePosition >= 0 && movePosition < mRecyclerView.getChildCount())
-            {
-                int top = mRecyclerView.getChildAt(movePosition).getTop();
-                mRecyclerView.smoothScrollBy(0, top);
-            }
-        } else
-        {
-            // 如果要跳转的位置在最后可见项之后，则先调用smoothScrollToPosition将要跳转的位置滚动到可见位置
-            // 再通过onScrollStateChanged控制再次调用smoothMoveToPosition，执行上一个判断中的方法
-            mRecyclerView.smoothScrollToPosition(position);
-            mToPosition = position;
-            mShouldScroll = true;
-        }
-    }
-
-
 }
