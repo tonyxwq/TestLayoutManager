@@ -1,6 +1,5 @@
 package com.rx.testlayoutmanager;
 
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
