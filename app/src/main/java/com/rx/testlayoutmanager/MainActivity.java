@@ -35,26 +35,22 @@ public class MainActivity extends AppCompatActivity
 {
 
     private RecyclerView mRecyclerView;
-    private Button mButton;Handler handler=new Handler();
+    private Button mButton;
+    Handler handler = new Handler();
     MyAdapter myAdapter;
-     EchelonLayoutManager manager;
+    EchelonLayoutManager manager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mButton=findViewById(R.id.buttonPanel);
+        mButton = findViewById(R.id.buttonPanel);
         mRecyclerView = findViewById(R.id.recycler_view);
-        LinearLayoutManager layoutManager=new LinearLayoutManager(MainActivity.this);
-        manager=new EchelonLayoutManager(mRecyclerView);
+        manager = new EchelonLayoutManager(mRecyclerView);
         mRecyclerView.setLayoutManager(manager);
-        myAdapter=new MyAdapter();
+        myAdapter = new MyAdapter();
         mRecyclerView.setAdapter(myAdapter);
-
-      /*  PagerSnapHelper snapHelper = new PagerSnapHelper();
-        snapHelper.attachToRecyclerView(mRecyclerView);*/
-
         mButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -66,9 +62,11 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    Runnable runnable=new Runnable(){
+    Runnable runnable = new Runnable()
+    {
         @Override
-        public void run() {
+        public void run()
+        {
             // TODO Auto-generated method stub
             //要做的事情，这里再次调用此Runnable对象，以实现每两秒实现一次的定时器操作
             //handler.postDelayed(this, 50);
@@ -80,13 +78,6 @@ public class MainActivity extends AppCompatActivity
     {
         private int[] icons = {R.mipmap.header_icon_1, R.mipmap.header_icon_2, R.mipmap.header_icon_3, R.mipmap.header_icon_4};
         private int[] bgs = {R.mipmap.bg_1, R.mipmap.bg_2, R.mipmap.bg_3, R.mipmap.bg_4};
-        private String[] nickNames = {"左耳近心", "凉雨初夏", "稚久九栀", "半窗疏影"};
-        private String[] descs = {
-                "回不去的地方叫故乡 没有根的迁徙叫流浪...",
-                "人生就像迷宫，我们用上半生找寻入口，用下半生找寻出口",
-                "原来地久天长，只是误会一场",
-                "不是故事的结局不够好，而是我们对故事的要求过多"
-        };
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
@@ -107,7 +98,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public int getItemCount()
         {
-            return 4;
+            return 400;
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder

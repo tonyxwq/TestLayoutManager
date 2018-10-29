@@ -1,12 +1,9 @@
 package com.rx.testlayoutmanager;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.VelocityTracker;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -19,6 +16,8 @@ import java.util.ArrayList;
 
 public class EchelonLayoutManager extends RecyclerView.LayoutManager
 {
+    private int temp = 0;
+    private float starty = 0, endy = 0;
     private int mItemViewWidth;
     private int mItemViewHeight;
     private float mScale = 0.9f;
@@ -31,7 +30,6 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
         mItemViewWidth = (int) (getHorizontalSpace() * 0.87f);//item的宽
         mItemViewHeight = (int) (mItemViewWidth * 1.46f);//item的高
         this.recyclerView = recyclerView;
-        //recyclerView.setOnFlingListener(onFlingListener);
     }
 
     @Override
@@ -48,7 +46,6 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
         mItemViewWidth = (int) (getHorizontalSpace() * 0.87f);
         mItemViewHeight = (int) (mItemViewWidth * 1.46f);
         mScrollOffset = Math.min(Math.max(mItemViewHeight, mScrollOffset), getItemCount() * mItemViewHeight);
-        //Log.d("data","========mItemViewHeight========"+mItemViewHeight);
         layoutChild(recycler, 0);
         recyclers = recycler;
     }
@@ -57,12 +54,10 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
     public void onAttachedToWindow(RecyclerView view)
     {
         super.onAttachedToWindow(view);
-        //check when raise finger and settle to the appropriate item
         view.setOnTouchListener(mTouchListener);
         view.setOnFlingListener(mOnFlingListener);
     }
 
-    float starty = 0, endy = 0;
     private View.OnTouchListener mTouchListener = new View.OnTouchListener()
     {
         @Override
@@ -77,21 +72,46 @@ public class EchelonLayoutManager extends RecyclerView.LayoutManager
                     break;
                 case MotionEvent.ACTION_UP:
                     endy = event.getY();
-                    if ((endy - starty) > 0 && (endy - starty) > 100)//向下滑动
+                    if ((endy - starty) > 0 && (endy - starty) > 1)//向下滑动
                     {
                         int scrow = (int) (mItemViewHeight - (endy - starty));
-                        recyclerView.scrollBy(0, -(scrow));
+                        temp = 0;
+                        ValueAnimator(scrow);
 
-                    } else if ((endy - starty) < 0 && (endy - starty) < 100)
+                    } else if ((endy - starty) < 0 && (endy - starty) < 1)
                     {
                         int scrow = (int) (mItemViewHeight + (endy - starty));
-                        recyclerView.scrollBy(0, scrow);
+                        temp = 0;
+                        ValueAnimator(-scrow);
                     }
                     break;
             }
             return false;
         }
     };
+
+
+    private void ValueAnimator(int index)
+    {
+        ValueAnimator anim = ValueAnimator.ofInt(0, index);
+        // 设置动画运行的时长
+        anim.setDuration(150);
+        anim.setRepeatCount(0);
+        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
+        {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation)
+            {
+                int currentValue = (Integer) animation.getAnimatedValue();
+                int currentmove = currentValue - temp;
+                recyclerView.scrollBy(0, -(currentmove));
+                temp = currentValue;
+            }
+        });
+
+        anim.start();
+        // 启动动画
+    }
 
     private RecyclerView.OnFlingListener mOnFlingListener = new RecyclerView.OnFlingListener()
     {
